@@ -15,7 +15,6 @@ struct ContentView: View {
             Rectangle()
                 .foregroundColor(Color.yellow)
                 .ignoresSafeArea()
-                .scaledToFill()
             
             VStack{
                 Text("game")

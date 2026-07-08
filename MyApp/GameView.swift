@@ -21,39 +21,103 @@ struct TimerView: View{
     @AppStorage("timer_value") var timerValue:Double = 10
     @State var isShowAlert = false
     @State var rTimeText = "0"
+    var radius = CGFloat(10)
     let formatter = DateComponentsFormatter()
+    
+    var buttonNum = 3
     
     var body: some View{
         ZStack{
             Rectangle()
                 .foregroundColor(Color.yellow)
                 .ignoresSafeArea()
-                .scaledToFill()
-                
+            
             VStack{
-                HStack{
-                    Button(action: {
-                    }) {
+                ZStack{
+                    Text("0.00")
+                        .font(.title)
+                    HStack{
+                        Spacer()
+                        Circle()
+                            .foregroundColor(.white)
+                            .frame(width: 50, height: 50)
+                            .overlay(
+                                Circle().stroke(Color.secondary, lineWidth: 2) // 白い枠線を重ねる
+                            )
+                            .overlay(
+                                Text("10")
+                                    .font(.title2)
+                            )
                     }
                 }
+                .padding(.top, 8)
                 
-                Text("\(rTimeText)")
-                    .foregroundColor(Color.black)
-                    .onTapGesture {
-                        if let timerHandler {   // timerを止める
-                            if timerHandler.isValid == true {
-                                timerHandler.invalidate()
-                            } else {
-                                resumptionTimer()
-                            }
+                HStack{
+                    ForEach(0..<buttonNum / 2, id: \.self) { i in
+                        Button(action: {
+                        }) {
                         }
+                        .frame(width: 80, height: 100)
+                        .font(.largeTitle)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(Color.secondary, lineWidth: 2)
+                        )
+                        .foregroundStyle(Color.white)
+                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                        .padding([.leading, .trailing], 20)
                     }
+                }
+                .padding(.bottom, 8)
+                
+                HStack{
+                    ForEach(buttonNum / 2..<buttonNum, id: \.self) { i in
+                        Button(action: {
+                        }) {
+                        }
+                        .frame(width: 80, height: 100)
+                        .font(.largeTitle)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(Color.secondary, lineWidth: 2)
+                        )
+                        .foregroundStyle(Color.white)
+                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                        .padding([.leading, .trailing], 20)
+                    }
+                }
+                .padding(.top, 8)
+                
+                Spacer()
                 
                 HStack{
                     Button(action: {
                     }) {
+                        Text("戻る")
                     }
+                    .frame(width: 160, height: 50)
+                    .font(.title)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: radius)
+                            .stroke(Color.secondary, lineWidth: 2)
+                    )
+                    .foregroundStyle(Color.white)
+                    .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                    .padding(.trailing, 40)
                     
+                    Button(action: {
+                    }) {
+                        Text("リトライ")
+                    }
+                    .frame(width: 160, height: 50)
+                    .font(.title)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: radius)
+                            .stroke(Color.secondary, lineWidth: 2)
+                    )
+                    .foregroundStyle(Color.white)
+                    .background(RoundedRectangle(cornerRadius: radius).fill(Color.blue))
+                    .padding(.leading, 40)
                 }
             }
         }
