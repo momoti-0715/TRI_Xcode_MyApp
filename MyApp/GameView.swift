@@ -8,23 +8,28 @@
 import SwiftUI
 
 struct GameView: View {
+    let difficulty:Int
+    
     var body: some View {
         ZStack{
-            TimerView()
+            TimerView(buttonNum: difficulty)
         }
     }
 }
 
 struct TimerView: View{
+    let buttonNum:Int
+    
     @State var timerHandler: Timer?
     @State var count:Double = 0
     @AppStorage("timer_value") var timerValue:Double = 10
     @State var isShowAlert = false
     @State var rTimeText = "0"
-    var radius = CGFloat(10)
+    @State private var isPresented: Bool = false
+    
+    let radius = CGFloat(10)
     let formatter = DateComponentsFormatter()
     
-    var buttonNum = 3
     
     var body: some View{
         ZStack{
@@ -94,9 +99,10 @@ struct TimerView: View{
                 
                 HStack{
                     Button(action: {
+                        isPresented = true
                     }) {
-                        Text("戻る")
-                            .frame(width: 160, height: 50)
+                        Text("メインメニュー")
+                            .frame(width: 200, height: 50)
                             .font(.title)
                             .overlay(
                                 RoundedRectangle(cornerRadius: radius)
@@ -106,11 +112,14 @@ struct TimerView: View{
                             .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
                             .padding(.trailing, 40)
                     }
+                    .fullScreenCover(isPresented: $isPresented) {
+                        ContentView()
+                    }
                     
                     Button(action: {
                     }) {
                         Text("リトライ")
-                            .frame(width: 160, height: 50)
+                            .frame(width: 200, height: 50)
                             .font(.title)
                             .overlay(
                                 RoundedRectangle(cornerRadius: radius)
@@ -188,5 +197,5 @@ struct TimerView: View{
 }
 
 #Preview {
-    GameView()
+    GameView(difficulty: 6)
 }

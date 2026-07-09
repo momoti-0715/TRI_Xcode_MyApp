@@ -8,7 +8,9 @@
 import SwiftUI
 
 struct SelectDifficulty: View {
-    var radius = CGFloat(10)
+    @State private var isPresentedGame: Bool = false    // 画面遷移の時に使用するbool値
+    @State private var isPresentedMain: Bool = false
+    let radius = CGFloat(10)
     
     var body: some View {
         ZStack{
@@ -24,6 +26,7 @@ struct SelectDifficulty: View {
                 HStack{
                     ForEach(0..<4, id: \.self) { i in
                         Button(action: {
+                            isPresentedGame = true
                         }) {
                             Text("\(i + 1)")
                                 .frame(width: 80, height: 80)
@@ -35,6 +38,9 @@ struct SelectDifficulty: View {
                                 .foregroundStyle(Color.white)
                                 .background(RoundedRectangle(cornerRadius: radius).fill(Color.mint))
                                 .padding(10)
+                        }
+                        .fullScreenCover(isPresented: $isPresentedGame) {
+                            GameView(difficulty: i + 1)
                         }
                     }
                 }
@@ -42,6 +48,7 @@ struct SelectDifficulty: View {
                 HStack{
                     ForEach(4..<8, id: \.self) { i in
                         Button(action: {
+                            isPresentedGame = true
                         }) {
                             Text("\(i + 1)")
                                 .frame(width: 80, height: 80)
@@ -54,10 +61,14 @@ struct SelectDifficulty: View {
                                 .background(RoundedRectangle(cornerRadius: radius).fill(Color.mint))
                                 .padding(10)
                         }
+                        .fullScreenCover(isPresented: $isPresentedGame) {
+                            GameView(difficulty: i + 1)
+                        }
                     }
                 }
                 
                 Button(action: {
+                    isPresentedMain = true
                 }) {
                     Text("戻る")
                         .frame(width: 160, height: 60)
@@ -69,8 +80,11 @@ struct SelectDifficulty: View {
                         .foregroundStyle(Color.white)
                         .background(RoundedRectangle(cornerRadius: radius).fill(Color.gray))
                         .padding(.top, 10)
-                    }
                 }
+                .fullScreenCover(isPresented: $isPresentedMain) { //フルスクリーンの画面遷移
+                    ContentView()
+                }
+            }
         }
     }
 }

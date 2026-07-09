@@ -9,6 +9,7 @@ import SwiftUI
 
 struct RecordView: View {
     @State var selectButton = 1
+    @State private var isPresented: Bool = false
     @State var dataArray: [[String]] = [
             ["A1", "A2"],
             ["B1", "B2"],
@@ -21,6 +22,7 @@ struct RecordView: View {
         640.0 * 0.75,
         640.0 * 0.25,
     ]
+    let radius = CGFloat(10)
     
 
     var body: some View {
@@ -92,9 +94,28 @@ struct RecordView: View {
                         }
                     }
                 }
+                .padding(.bottom, 10)
+                
+                
+                Button(action: {
+                    isPresented = true
+                }) {
+                    Text("戻る")
+                        .frame(width: 160, height: 40)
+                        .font(.title)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(Color.secondary, lineWidth: 2)
+                        )
+                        .foregroundStyle(Color.white)
+                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                        .padding(.trailing, 40)
+                }
+                .fullScreenCover(isPresented: $isPresented) {
+                    ContentView()
+                }
             }
             .padding(.top, 30)
-            .padding(.bottom, 10)
             .frame(width: 640)
         }
     }
