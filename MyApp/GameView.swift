@@ -56,16 +56,17 @@ struct TimerView: View{
                     ForEach(0..<buttonNum / 2, id: \.self) { i in
                         Button(action: {
                         }) {
+                            Text("")
+                                .frame(width: 80, height: 100)
+                                .font(.largeTitle)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: radius)
+                                        .stroke(Color.secondary, lineWidth: 2)
+                                )
+                                .foregroundStyle(Color.white)
+                                .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                                .padding([.leading, .trailing], 20)
                         }
-                        .frame(width: 80, height: 100)
-                        .font(.largeTitle)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: radius)
-                                .stroke(Color.secondary, lineWidth: 2)
-                        )
-                        .foregroundStyle(Color.white)
-                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
-                        .padding([.leading, .trailing], 20)
                     }
                 }
                 .padding(.bottom, 8)
@@ -74,16 +75,17 @@ struct TimerView: View{
                     ForEach(buttonNum / 2..<buttonNum, id: \.self) { i in
                         Button(action: {
                         }) {
+                            Text("")
+                                .frame(width: 80, height: 100)
+                                .font(.largeTitle)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: radius)
+                                        .stroke(Color.secondary, lineWidth: 2)
+                                )
+                                .foregroundStyle(Color.white)
+                                .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                                .padding([.leading, .trailing], 20)
                         }
-                        .frame(width: 80, height: 100)
-                        .font(.largeTitle)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: radius)
-                                .stroke(Color.secondary, lineWidth: 2)
-                        )
-                        .foregroundStyle(Color.white)
-                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
-                        .padding([.leading, .trailing], 20)
                     }
                 }
                 .padding(.top, 8)
@@ -94,30 +96,30 @@ struct TimerView: View{
                     Button(action: {
                     }) {
                         Text("戻る")
+                            .frame(width: 160, height: 50)
+                            .font(.title)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: radius)
+                                    .stroke(Color.secondary, lineWidth: 2)
+                            )
+                            .foregroundStyle(Color.white)
+                            .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                            .padding(.trailing, 40)
                     }
-                    .frame(width: 160, height: 50)
-                    .font(.title)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: radius)
-                            .stroke(Color.secondary, lineWidth: 2)
-                    )
-                    .foregroundStyle(Color.white)
-                    .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
-                    .padding(.trailing, 40)
                     
                     Button(action: {
                     }) {
                         Text("リトライ")
+                            .frame(width: 160, height: 50)
+                            .font(.title)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: radius)
+                                    .stroke(Color.secondary, lineWidth: 2)
+                            )
+                            .foregroundStyle(Color.white)
+                            .background(RoundedRectangle(cornerRadius: radius).fill(Color.blue))
+                            .padding(.leading, 40)
                     }
-                    .frame(width: 160, height: 50)
-                    .font(.title)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: radius)
-                            .stroke(Color.secondary, lineWidth: 2)
-                    )
-                    .foregroundStyle(Color.white)
-                    .background(RoundedRectangle(cornerRadius: radius).fill(Color.blue))
-                    .padding(.leading, 40)
                 }
             }
         }

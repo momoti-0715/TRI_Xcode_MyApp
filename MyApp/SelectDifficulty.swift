@@ -26,16 +26,16 @@ struct SelectDifficulty: View {
                         Button(action: {
                         }) {
                             Text("\(i + 1)")
+                                .frame(width: 80, height: 80)
+                                .font(.largeTitle)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: radius)
+                                        .stroke(Color.secondary, lineWidth: 2)
+                                )
+                                .foregroundStyle(Color.white)
+                                .background(RoundedRectangle(cornerRadius: radius).fill(Color.mint))
+                                .padding(10)
                         }
-                        .frame(width: 80, height: 80)
-                        .font(.largeTitle)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: radius)
-                                .stroke(Color.secondary, lineWidth: 2)
-                        )
-                        .foregroundStyle(Color.white)
-                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.mint))
-                        .padding(10)
                     }
                 }
                 
@@ -44,33 +44,33 @@ struct SelectDifficulty: View {
                         Button(action: {
                         }) {
                             Text("\(i + 1)")
+                                .frame(width: 80, height: 80)
+                                .font(.largeTitle)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: radius)
+                                        .stroke(Color.secondary, lineWidth: 2)
+                                )
+                                .foregroundStyle(Color.white)
+                                .background(RoundedRectangle(cornerRadius: radius).fill(Color.mint))
+                                .padding(10)
                         }
-                        .frame(width: 80, height: 80)
-                        .font(.largeTitle)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: radius)
-                                .stroke(Color.secondary, lineWidth: 2)
-                        )
-                        .foregroundStyle(Color.white)
-                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.mint))
-                        .padding(10)
                     }
                 }
                 
                 Button(action: {
                 }) {
                     Text("戻る")
+                        .frame(width: 160, height: 60)
+                        .font(.largeTitle)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(Color.secondary, lineWidth: 2)
+                        )
+                        .foregroundStyle(Color.white)
+                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.gray))
+                        .padding(.top, 10)
+                    }
                 }
-                .frame(width: 160, height: 60)
-                .font(.largeTitle)
-                .overlay(
-                    RoundedRectangle(cornerRadius: radius)
-                        .stroke(Color.secondary, lineWidth: 2)
-                )
-                .foregroundStyle(Color.white)
-                .background(RoundedRectangle(cornerRadius: radius).fill(Color.gray))
-                .padding(.top, 10)
-            }
         }
     }
 }
