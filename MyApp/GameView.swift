@@ -21,15 +21,15 @@ struct TimerView: View{
     var buttonNum:Int
     
     @State var timerHandler: Timer?
-    @State var count:Double = 0
-    @AppStorage("timer_value") var timerValue:Double = 10
-    @State var isShowAlert = false
-    @State var rTimeText = "0"
+    @State var count = 0
+    @State var timerValue = 10
+    @State var rTimeText = "10"
     @State private var isPresented: Bool = false
+    @State private var hasStarted = false
+    @State private var hasTimerStarted = false
     
+    let rangeTime = 60
     let radius = CGFloat(10)
-    let formatter = DateComponentsFormatter()
-    
     
     var body: some View{
         ZStack{
@@ -47,10 +47,10 @@ struct TimerView: View{
                             .foregroundColor(.white)
                             .frame(width: 50, height: 50)
                             .overlay(
-                                Circle().stroke(Color.secondary, lineWidth: 2) // 白い枠線を重ねる
+                                Circle().stroke(Color.secondary, lineWidth: 2)
                             )
                             .overlay(
-                                Text("10")
+                                Text(rTimeText)
                                     .font(.title2)
                             )
                     }
@@ -67,16 +67,16 @@ struct TimerView: View{
                         Button(action: {
                         }) {
                             Text("")
-                                .frame(width: 80, height: 100)
                                 .font(.largeTitle)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: radius)
-                                        .stroke(Color.secondary, lineWidth: 2)
-                                )
-                                .foregroundStyle(Color.white)
-                                .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
-                                .padding([.leading, .trailing], 20)
                         }
+                        .frame(width: 80, height: 100)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(Color.secondary, lineWidth: 2)
+                        )
+                        .foregroundStyle(Color.white)
+                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                        .padding([.leading, .trailing], 20)
                     }
                 }
                 .padding(.bottom, 8)
@@ -86,16 +86,16 @@ struct TimerView: View{
                         Button(action: {
                         }) {
                             Text("")
-                                .frame(width: 80, height: 100)
                                 .font(.largeTitle)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: radius)
-                                        .stroke(Color.secondary, lineWidth: 2)
-                                )
-                                .foregroundStyle(Color.white)
-                                .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
-                                .padding([.leading, .trailing], 20)
                         }
+                        .frame(width: 80, height: 100)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(Color.secondary, lineWidth: 2)
+                        )
+                        .foregroundStyle(Color.white)
+                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                        .padding([.leading, .trailing], 20)
                     }
                 }
                 .padding(.top, 8)
@@ -122,6 +122,8 @@ struct TimerView: View{
                     }
                     
                     Button(action: {
+                        rTimeText = "10"
+                        startTimer()
                     }) {
                         Text("リトライ")
                             .frame(width: 200, height: 50)
@@ -137,17 +139,16 @@ struct TimerView: View{
                 }
             }
         }
-        .alert("完了", isPresented: $isShowAlert){
-            Button("OK"){
-                print("OKがタップされました")
+        .onAppear {
+            if !hasStarted {
+                hasStarted = true
+                startTimer()
             }
-        } message: {
-            Text("おいしくできたよ！")
         }
     }
     
     func startTimer(){
-        settingFormatter()
+        count = 0
         
         // タイマーをリセットする
         if let timerHandler{
@@ -155,17 +156,7 @@ struct TimerView: View{
                 timerHandler.invalidate()
             }
         }
-        count = 0
         
-        timerHandler = Timer.scheduledTimer(withTimeInterval: 1, repeats: true){ _ in
-            Task{ @MainActor in
-                countDownTimer()
-                remaining()
-            }
-        }
-    }
-    
-    func resumptionTimer(){
         timerHandler = Timer.scheduledTimer(withTimeInterval: 1, repeats: true){ _ in
             Task{ @MainActor in
                 countDownTimer()
@@ -180,24 +171,15 @@ struct TimerView: View{
         if timerValue - count <= 0{
             timerHandler?.invalidate()
             
-            isShowAlert = true
+            if !hasTimerStarted{
+                hasTimerStarted = true
+                // timer開始
+            }
         }
-    }
-    
-    func settingFormatter(){
-        formatter.unitsStyle = .full
-        formatter.allowedUnits = [.minute, .second]
-        formatter.calendar?.locale = Locale(identifier: "ja_JP")
     }
     
     func remaining(){
-        let duration: TimeInterval = (timerValue - count)
-        
-        if let formattedString = formatter.string(from: duration) {
-            rTimeText = formattedString
-        } else {
-            rTimeText = "0秒"
-        }
+        rTimeText = String("\(timerValue - count)")
     }
 }
 
