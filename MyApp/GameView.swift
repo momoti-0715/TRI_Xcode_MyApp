@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct GameView: View {
     var difficulty:Int
@@ -20,13 +21,10 @@ struct GameView: View {
 struct TimerView: View{
     var buttonNum:Int
     
-    @State var timerHandler: Timer?
-    @State var count = 0
-    @State var timerValue = 10
-    @State var rTimeText = "10"
+    @StateObject private var game = Game()
+    
     @State private var isPresented: Bool = false
     @State private var hasStarted = false
-    @State private var hasTimerStarted = false
     
     let rangeTime = 60
     let radius = CGFloat(10)
@@ -50,7 +48,7 @@ struct TimerView: View{
                                 Circle().stroke(Color.secondary, lineWidth: 2)
                             )
                             .overlay(
-                                Text(rTimeText)
+                                Text(game.gTimer.rTimeText)
                                     .font(.title2)
                             )
                     }
@@ -66,8 +64,13 @@ struct TimerView: View{
                     ForEach(0..<buttonNum / 2, id: \.self) { i in
                         Button(action: {
                         }) {
-                            Text("")
-                                .font(.largeTitle)
+                            VStack{
+                                Text("10")
+                                    .font(.title)
+                                    .padding(.bottom, 1)
+                                Text("±00.00")
+                                    .font(.title3)
+                            }
                         }
                         .frame(width: 80, height: 100)
                         .overlay(
@@ -85,8 +88,13 @@ struct TimerView: View{
                     ForEach(buttonNum / 2..<buttonNum, id: \.self) { i in
                         Button(action: {
                         }) {
-                            Text("")
-                                .font(.largeTitle)
+                            VStack{
+                                Text("10")
+                                    .font(.title)
+                                    .padding(.bottom, 1)
+                                Text("±00.00")
+                                    .font(.title3)
+                            }
                         }
                         .frame(width: 80, height: 100)
                         .overlay(
@@ -122,8 +130,8 @@ struct TimerView: View{
                     }
                     
                     Button(action: {
-                        rTimeText = "10"
-                        startTimer()
+                        game.gTimer.rTimeText = "10"
+                        game.start()
                     }) {
                         Text("リトライ")
                             .frame(width: 200, height: 50)
@@ -142,44 +150,64 @@ struct TimerView: View{
         .onAppear {
             if !hasStarted {
                 hasStarted = true
-                startTimer()
+                game.start()
             }
         }
     }
+}
+
+class Game: ObservableObject{
+    @Published var gTimer = GTimer()
     
+    private var cancellable: AnyCancellable?
+
+    // Gameを仲介させて値を渡す処理
+    init() {
+       cancellable = gTimer.objectWillChange
+           .sink { [weak self] _ in
+               self?.objectWillChange.send()
+           }
+    }
+    
+    func start(){
+        gTimer.startTimer()
+    }
+}
+
+class GTimer: ObservableObject {
+    private var timerHandler: Timer?
+    
+    var count = 0
+    var timerValue = 10
+    
+    @Published var rTimeText = "10"
+
     func startTimer(){
         count = 0
         
-        // タイマーをリセットする
-        if let timerHandler{
-            if timerHandler.isValid == true {
-                timerHandler.invalidate()
-            }
+        if let timerHandler {
+            timerHandler.invalidate()
         }
         
         timerHandler = Timer.scheduledTimer(withTimeInterval: 1, repeats: true){ _ in
-            Task{ @MainActor in
-                countDownTimer()
-                remaining()
+            Task { @MainActor in
+                self.countDownTimer()
+                self.remaining()
             }
         }
     }
-    
+
     func countDownTimer(){
         count += 1
         
-        if timerValue - count <= 0{
+        if timerValue - count <= 0 {
             timerHandler?.invalidate()
-            
-            if !hasTimerStarted{
-                hasTimerStarted = true
-                // timer開始
-            }
         }
     }
-    
+
     func remaining(){
-        rTimeText = String("\(timerValue - count)")
+        rTimeText = String(timerValue - count)
+        print(rTimeText)
     }
 }
 
