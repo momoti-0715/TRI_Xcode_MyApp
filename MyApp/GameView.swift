@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct GameView: View {
-    let difficulty:Int
+    var difficulty:Int
     
     var body: some View {
         ZStack{
@@ -18,7 +18,7 @@ struct GameView: View {
 }
 
 struct TimerView: View{
-    let buttonNum:Int
+    var buttonNum:Int
     
     @State var timerHandler: Timer?
     @State var count:Double = 0
@@ -56,6 +56,11 @@ struct TimerView: View{
                     }
                 }
                 .padding(.top, 8)
+                
+                
+                if buttonNum == 1 {
+                    Spacer()
+                }
                 
                 HStack{
                     ForEach(0..<buttonNum / 2, id: \.self) { i in
