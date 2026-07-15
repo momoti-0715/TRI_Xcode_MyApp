@@ -26,7 +26,6 @@ struct TimerView: View{
     @State private var isPresented: Bool = false
     @State private var hasStarted = false
     
-    let rangeTime = 60
     let radius = CGFloat(10)
     
     var body: some View{
@@ -37,7 +36,7 @@ struct TimerView: View{
             
             VStack{
                 ZStack{
-                    Text("0.00")
+                    Text(game.sw.stopWatchText)
                         .font(.title)
                     HStack{
                         Spacer()
@@ -48,7 +47,7 @@ struct TimerView: View{
                                 Circle().stroke(Color.secondary, lineWidth: 2)
                             )
                             .overlay(
-                                Text(game.gTimer.rTimeText)
+                                Text(game.ct.rTimeText)
                                     .font(.title2)
                             )
                     }
@@ -113,6 +112,7 @@ struct TimerView: View{
                 HStack{
                     Button(action: {
                         isPresented = true
+                        game.sw.stopTimer()
                     }) {
                         Text("メインメニュー")
                             .frame(width: 200, height: 50)
@@ -130,7 +130,7 @@ struct TimerView: View{
                     }
                     
                     Button(action: {
-                        game.gTimer.rTimeText = "10"
+                        game.ct.rTimeText = "10"
                         game.start()
                     }) {
                         Text("リトライ")
@@ -157,30 +157,50 @@ struct TimerView: View{
 }
 
 class Game: ObservableObject{
-    @Published var gTimer = GTimer()
+    @Published var ct = CountTimer()
+    @Published var sw = StopWatch()
     
     private var cancellable: AnyCancellable?
 
     // Gameを仲介させて値を渡す処理
     init() {
-       cancellable = gTimer.objectWillChange
-           .sink { [weak self] _ in
-               self?.objectWillChange.send()
-           }
+        // カウントタイマーの変更をGameへ伝える
+        cancellable = Publishers.Merge(
+            ct.objectWillChange,
+            sw.objectWillChange
+        )
+        .sink { [weak self] _ in
+            self?.objectWillChange.send()
+        }
     }
     
     func start(){
-        gTimer.startTimer()
+        sw.stopTimer()   // 動いていたら停止
+        sw.time = 0      // 必要ならリセット
+        sw.stopWatchText = "0.00"
+        
+        ct.startTimer()
+        ct.sw = sw
     }
 }
 
-class GTimer: ObservableObject {
+class CountTimer: ObservableObject {
     private var timerHandler: Timer?
     
+    var sw = StopWatch()
+    
+    private var cancellable: AnyCancellable?
+    
+    @Published var rTimeText = "10"
     var count = 0
     var timerValue = 10
     
-    @Published var rTimeText = "10"
+    init() {
+        cancellable = sw.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+    }
 
     func startTimer(){
         count = 0
@@ -202,12 +222,48 @@ class GTimer: ObservableObject {
         
         if timerValue - count <= 0 {
             timerHandler?.invalidate()
+            sw.startTimer()
         }
     }
 
     func remaining(){
         rTimeText = String(timerValue - count)
         print(rTimeText)
+    }
+}
+
+class StopWatch: ObservableObject {
+    private var timerHandler: Timer?
+    
+    var time:Double = 0
+    let interval:Double = 0.01
+    
+    @Published var stopWatchText = "0.00"
+
+    func startTimer(){
+        self.time = 0
+        
+        if let timerHandler {
+            timerHandler.invalidate()
+        }
+        
+        timerHandler = Timer.scheduledTimer(withTimeInterval: interval, repeats: true){ _ in
+            Task { @MainActor in
+                self.count()
+            }
+        }
+    }
+    
+    func count(){
+        time += interval
+        stopWatchText = String(format: "%.2f", time)
+        print(stopWatchText)
+    }
+    
+    func stopTimer(){
+        if let timerHandler {
+            timerHandler.invalidate()
+        }
     }
 }
 
