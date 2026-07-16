@@ -26,12 +26,21 @@ struct TimerView: View{
     @State private var isPresented: Bool = false
     @State private var hasStarted = false
     @State var buttonEnable: [Bool] = []
+    @State var targetTime: [Int] = []
+    @State var pushTime:[Double] = []
+    @State private var isFadedOut = false   // フェードアウト状態を管理するフラグ
+    @State private var buttonVisible = false    // リトライボタンなどのボタンの表示切り換え
+    @State private var targetLavelVisible = true    // 目標時間の表示切り替え
+    @State private var resultLavelVisible = false    // 時差の表示切り替え
     
     let radius = CGFloat(10)
     
     init(buttonNum: Int) {
         self.buttonNum = buttonNum
         _buttonEnable = State(initialValue: Array(repeating: false, count: buttonNum))
+        _pushTime = State(initialValue: Array(repeating: 0.0, count: buttonNum))
+        _targetTime = State(initialValue: Array(repeating: 0, count: buttonNum))
+        
     }
     
     var body: some View{
@@ -44,8 +53,16 @@ struct TimerView: View{
                 ZStack{
                     Text(game.sw.stopWatchText)
                         .font(.title)
+                        .opacity(isFadedOut ? 0 : 1) // フラグに応じて透明度を変更
+                        .animation(.easeOut(duration:isFadedOut ? 2.0 : 0), value: isFadedOut) // フェードアウトのアニメーション
+                                    
                     HStack{
+                        if resultLavelVisible{
+                            Text(String(format: "時差の合計：%.2f", game.score))
+                                .font(.title3)
+                        }
                         Spacer()
+                        
                         Circle()
                             .foregroundColor(.white)
                             .frame(width: 50, height: 50)
@@ -71,12 +88,17 @@ struct TimerView: View{
                             buttonEnable[i] = false
                         }) {
                             VStack{
-                                Text("10")
-                                    .font(.title)
-                                    .padding(.bottom, 1)
-                                Text("±00.00")
-                                    .font(.title3)
+                                if targetLavelVisible{
+                                    Text("\(targetTime[i])")
+                                        .font(.title)
+                                        .padding(.bottom, 1)
+                                }
+                                if resultLavelVisible{
+                                    Text("±00.00")
+                                        .font(.title3)
+                                }
                             }
+                            .frame(width: 80, height: 100)
                         }
                         .disabled(!buttonEnable[i])
                         .frame(width: 80, height: 100)
@@ -97,12 +119,17 @@ struct TimerView: View{
                             buttonEnable[i] = false
                         }) {
                             VStack{
-                                Text("10")
-                                    .font(.title)
-                                    .padding(.bottom, 1)
-                                Text("±00.00")
-                                    .font(.title3)
+                                if targetLavelVisible{
+                                    Text("\(targetTime[i])")
+                                        .font(.title)
+                                        .padding(.bottom, 1)
+                                }
+                                if resultLavelVisible{
+                                    Text("±00.00")
+                                        .font(.title3)
+                                }
                             }
+                            .frame(width: 80, height: 100)
                         }
                         .disabled(!buttonEnable[i]) // 有効/無効の切り替え
                         .frame(width: 80, height: 100)
@@ -120,40 +147,43 @@ struct TimerView: View{
                 Spacer()
                 
                 HStack{
-                    Button(action: {
-                        isPresented = true
-                        game.sw.stopTimer()
-                        game.ct.stopTimer()
-                    }) {
-                        Text("メインメニュー")
-                            .frame(width: 200, height: 50)
-                            .font(.title)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: radius)
-                                    .stroke(Color.secondary, lineWidth: 2)
-                            )
-                            .foregroundStyle(Color.white)
-                            .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
-                            .padding(.trailing, 40)
-                    }
-                    .fullScreenCover(isPresented: $isPresented) {
-                        ContentView()
-                    }
-                    
-                    Button(action: {
-                        game.ct.rTimeText = "10"
-                        game.start()
-                    }) {
-                        Text("リトライ")
-                            .frame(width: 200, height: 50)
-                            .font(.title)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: radius)
-                                    .stroke(Color.secondary, lineWidth: 2)
-                            )
-                            .foregroundStyle(Color.white)
-                            .background(RoundedRectangle(cornerRadius: radius).fill(Color.blue))
-                            .padding(.leading, 40)
+                    if buttonVisible{
+                        Button(action: {
+                            isPresented = true
+                            game.sw.stopTimer()
+                            game.ct.stopTimer()
+                        }) {
+                            Text("メインメニュー")
+                                .font(.title)
+                            
+                        }
+                        .frame(width: 200, height: 50)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(Color.secondary, lineWidth: 2)
+                        )
+                        .foregroundStyle(Color.white)
+                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                        .padding(.trailing, 40)
+                        .fullScreenCover(isPresented: $isPresented) {
+                            ContentView()
+                        }
+                        
+                        Button(action: {
+                            game.ct.rTimeText = "10"
+                            game.start()
+                        }) {
+                            Text("リトライ")
+                                .font(.title)
+                        }
+                        .frame(width: 200, height: 50)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: radius)
+                                .stroke(Color.secondary, lineWidth: 2)
+                        )
+                        .foregroundStyle(Color.white)
+                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.blue))
+                        .padding(.leading, 40)
                     }
                 }
             }
@@ -164,14 +194,37 @@ struct TimerView: View{
                 game.start()
             }
         }
+        .onChange(of: game.isRunning, { _, running in
+            if running{
+                buttonVisible = false
+                resultLavelVisible = false
+                
+                targetTime = Array(11..<60)
+                    .shuffled()
+                    .prefix(buttonNum)
+                    .map { $0 }
+            } else {
+                buttonVisible = true
+                resultLavelVisible = true
+            }
+        })
         .onChange(of: game.sw.isRunning) { _, running in
             if running {
                 buttonEnable = Array(repeating: true, count: buttonNum)
+                targetLavelVisible = false
+            } else {
+                targetLavelVisible = true
             }
         }
+        .onChange(of: game.sw.time, { _, value in
+            if !isFadedOut && value > 8{
+                isFadedOut = true
+            }
+        })
         .onChange(of: buttonEnable) { _, value in
             if game.sw.isRunning && value.allSatisfy({ !$0 }) {
                 game.end()
+                isFadedOut = false
             }
         }
     }
@@ -180,6 +233,8 @@ struct TimerView: View{
 class Game: ObservableObject{
     @Published var ct = CountTimer()
     @Published var sw = StopWatch()
+    @Published var isRunning = false
+    @Published var score:Double = 0
     
     private var cancellable: AnyCancellable?
 
@@ -196,6 +251,8 @@ class Game: ObservableObject{
     }
     
     func start(){
+        isRunning = true
+        score = 0
         sw.stopTimer()   // 動いていたら停止
         sw.time = 0      // 必要ならリセット
         sw.stopWatchText = "0.00"
@@ -205,18 +262,19 @@ class Game: ObservableObject{
     }
     
     func end(){
+        isRunning = false
         sw.stopTimer()
     }
 }
 
 class CountTimer: ObservableObject {
-    private var timerHandler: Timer?
+    @Published var rTimeText = "10"
     
     var sw = StopWatch()
     
     private var cancellable: AnyCancellable?
+    private var timerHandler: Timer?
     
-    @Published var rTimeText = "10"
     var count = 0
     var timerValue = 10
     
@@ -262,10 +320,10 @@ class CountTimer: ObservableObject {
 class StopWatch: ObservableObject {
     @Published var stopWatchText = "0.00"
     @Published var isRunning = false
+    @Published var time:Double = 0
     
     private var timerHandler: Timer?
     
-    var time:Double = 0
     let interval:Double = 0.01
 
     func startTimer(){
