@@ -25,8 +25,14 @@ struct TimerView: View{
     
     @State private var isPresented: Bool = false
     @State private var hasStarted = false
+    @State var buttonEnable: [Bool] = []
     
     let radius = CGFloat(10)
+    
+    init(buttonNum: Int) {
+        self.buttonNum = buttonNum
+        _buttonEnable = State(initialValue: Array(repeating: false, count: buttonNum))
+    }
     
     var body: some View{
         ZStack{
@@ -62,6 +68,7 @@ struct TimerView: View{
                 HStack{
                     ForEach(0..<buttonNum / 2, id: \.self) { i in
                         Button(action: {
+                            buttonEnable[i] = false
                         }) {
                             VStack{
                                 Text("10")
@@ -71,13 +78,14 @@ struct TimerView: View{
                                     .font(.title3)
                             }
                         }
+                        .disabled(!buttonEnable[i])
                         .frame(width: 80, height: 100)
                         .overlay(
                             RoundedRectangle(cornerRadius: radius)
                                 .stroke(Color.secondary, lineWidth: 2)
                         )
                         .foregroundStyle(Color.white)
-                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                        .background(RoundedRectangle(cornerRadius: radius).fill(buttonEnable[i] ? Color.cyan : Color.secondary))
                         .padding([.leading, .trailing], 20)
                     }
                 }
@@ -86,6 +94,7 @@ struct TimerView: View{
                 HStack{
                     ForEach(buttonNum / 2..<buttonNum, id: \.self) { i in
                         Button(action: {
+                            buttonEnable[i] = false
                         }) {
                             VStack{
                                 Text("10")
@@ -95,13 +104,14 @@ struct TimerView: View{
                                     .font(.title3)
                             }
                         }
+                        .disabled(!buttonEnable[i]) // 有効/無効の切り替え
                         .frame(width: 80, height: 100)
                         .overlay(
                             RoundedRectangle(cornerRadius: radius)
                                 .stroke(Color.secondary, lineWidth: 2)
                         )
                         .foregroundStyle(Color.white)
-                        .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
+                        .background(RoundedRectangle(cornerRadius: radius).fill(buttonEnable[i] ? Color.cyan : Color.secondary))
                         .padding([.leading, .trailing], 20)
                     }
                 }
@@ -113,6 +123,7 @@ struct TimerView: View{
                     Button(action: {
                         isPresented = true
                         game.sw.stopTimer()
+                        game.ct.stopTimer()
                     }) {
                         Text("メインメニュー")
                             .frame(width: 200, height: 50)
@@ -153,6 +164,16 @@ struct TimerView: View{
                 game.start()
             }
         }
+        .onChange(of: game.sw.isRunning) { _, running in
+            if running {
+                buttonEnable = Array(repeating: true, count: buttonNum)
+            }
+        }
+        .onChange(of: buttonEnable) { _, value in
+            if game.sw.isRunning && value.allSatisfy({ !$0 }) {
+                game.end()
+            }
+        }
     }
 }
 
@@ -182,6 +203,10 @@ class Game: ObservableObject{
         ct.startTimer()
         ct.sw = sw
     }
+    
+    func end(){
+        sw.stopTimer()
+    }
 }
 
 class CountTimer: ObservableObject {
@@ -205,9 +230,7 @@ class CountTimer: ObservableObject {
     func startTimer(){
         count = 0
         
-        if let timerHandler {
-            timerHandler.invalidate()
-        }
+        timerHandler?.invalidate()
         
         timerHandler = Timer.scheduledTimer(withTimeInterval: 1, repeats: true){ _ in
             Task { @MainActor in
@@ -228,24 +251,28 @@ class CountTimer: ObservableObject {
 
     func remaining(){
         rTimeText = String(timerValue - count)
-        print(rTimeText)
+//        print(rTimeText)
+    }
+    
+    func stopTimer(){
+        timerHandler?.invalidate()
     }
 }
 
 class StopWatch: ObservableObject {
+    @Published var stopWatchText = "0.00"
+    @Published var isRunning = false
+    
     private var timerHandler: Timer?
     
     var time:Double = 0
     let interval:Double = 0.01
-    
-    @Published var stopWatchText = "0.00"
 
     func startTimer(){
         self.time = 0
+        isRunning = true
         
-        if let timerHandler {
-            timerHandler.invalidate()
-        }
+        timerHandler?.invalidate()
         
         timerHandler = Timer.scheduledTimer(withTimeInterval: interval, repeats: true){ _ in
             Task { @MainActor in
@@ -257,13 +284,12 @@ class StopWatch: ObservableObject {
     func count(){
         time += interval
         stopWatchText = String(format: "%.2f", time)
-        print(stopWatchText)
+//        print(stopWatchText)
     }
     
     func stopTimer(){
-        if let timerHandler {
-            timerHandler.invalidate()
-        }
+        timerHandler?.invalidate()
+        isRunning = false
     }
 }
 
