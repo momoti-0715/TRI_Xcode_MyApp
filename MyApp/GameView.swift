@@ -91,7 +91,7 @@ struct TimerView: View{
                                         .padding(.bottom, 1)
                                 }
                                 if resultLavelVisible{
-                                    Text("\(game.pushTime[i])")
+                                    Text("\(game.diffTime[i])")
                                         .font(.title3)
                                 }
                             }
@@ -123,7 +123,7 @@ struct TimerView: View{
                                         .padding(.bottom, 1)
                                 }
                                 if resultLavelVisible{
-                                    Text("\(game.pushTime[i])")
+                                    Text("\(game.diffTime[i])")
                                         .font(.title3)
                                 }
                             }
@@ -198,6 +198,7 @@ struct TimerView: View{
                 resultLavelVisible = false
                 
                 game.setTargetTime()
+                game.resetVariable()
             } else {
                 buttonVisible = true
                 resultLavelVisible = true
@@ -231,8 +232,8 @@ class Game: ObservableObject{
     @Published var isRunning = false
     @Published var score:Double = 0
     @Published var targetTime: [Int] = []   // buttonの目標時間
-    @Published var pushTime:[Double] = []   // buttonを押した時間
-    
+    @Published var diffTime:[String] = []
+    private var pushTime:[Double] = []   // buttonを押した時間
     private var cancellable: AnyCancellable?
     private var num:Int
 
@@ -240,6 +241,7 @@ class Game: ObservableObject{
     init(buttonNum:Int) {
         num = buttonNum
         pushTime = Array(repeating: 0.0, count: num)
+        diffTime = Array(repeating: "0.00", count: num)
         targetTime = Array(repeating: 0, count: num)
         
         // カウントタイマーの変更をGameへ伝える
@@ -263,13 +265,31 @@ class Game: ObservableObject{
         pushTime[buttonNum] = sw.time
     }
     
-    func start(){
-        isRunning = true
+    func getScore(){
+        for i in 0..<num {
+            let diff = pushTime[i] - Double(targetTime[i])
+            
+            if diff < 0{
+                diffTime[i] = String(format: "%.2f", diff)
+            } else {
+                diffTime[i] = String(format: "+%.2f", diff)
+            }
+            
+            score += abs(diff)
+        }
+    }
+    
+    func resetVariable(){
+        pushTime = Array(repeating: 0.0, count: num)
+        diffTime = Array(repeating: "0.00", count: num)
         score = 0
-        sw.stopTimer()   // 動いていたら停止
         sw.time = 0      // 必要ならリセット
         sw.stopWatchText = "0.00"
-        
+    }
+    
+    func start(){
+        isRunning = true
+        sw.stopTimer()   // 動いていたら停止
         ct.sw = sw
         ct.startTimer()
     }
@@ -277,6 +297,7 @@ class Game: ObservableObject{
     func end(){
         isRunning = false
         sw.stopTimer()
+        getScore()
     }
 }
 
