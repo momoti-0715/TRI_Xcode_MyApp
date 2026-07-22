@@ -21,13 +21,11 @@ struct GameView: View {
 struct TimerView: View{
     var buttonNum:Int
     
-    @StateObject private var game = Game()
+    @StateObject private var game:Game
     
     @State private var isPresented: Bool = false
     @State private var hasStarted = false
     @State var buttonEnable: [Bool] = []
-    @State var targetTime: [Int] = []
-    @State var pushTime:[Double] = []
     @State private var isFadedOut = false   // フェードアウト状態を管理するフラグ
     @State private var buttonVisible = false    // リトライボタンなどのボタンの表示切り換え
     @State private var targetLavelVisible = true    // 目標時間の表示切り替え
@@ -38,9 +36,7 @@ struct TimerView: View{
     init(buttonNum: Int) {
         self.buttonNum = buttonNum
         _buttonEnable = State(initialValue: Array(repeating: false, count: buttonNum))
-        _pushTime = State(initialValue: Array(repeating: 0.0, count: buttonNum))
-        _targetTime = State(initialValue: Array(repeating: 0, count: buttonNum))
-        
+        _game = StateObject(wrappedValue: Game(buttonNum: buttonNum))
     }
     
     var body: some View{
@@ -86,15 +82,16 @@ struct TimerView: View{
                     ForEach(0..<buttonNum / 2, id: \.self) { i in
                         Button(action: {
                             buttonEnable[i] = false
+                            game.recordTime(i)
                         }) {
                             VStack{
                                 if targetLavelVisible{
-                                    Text("\(targetTime[i])")
+                                    Text("\(game.targetTime[i])")
                                         .font(.title)
                                         .padding(.bottom, 1)
                                 }
                                 if resultLavelVisible{
-                                    Text("±00.00")
+                                    Text("\(game.pushTime[i])")
                                         .font(.title3)
                                 }
                             }
@@ -117,15 +114,16 @@ struct TimerView: View{
                     ForEach(buttonNum / 2..<buttonNum, id: \.self) { i in
                         Button(action: {
                             buttonEnable[i] = false
+                            game.recordTime(i)
                         }) {
                             VStack{
                                 if targetLavelVisible{
-                                    Text("\(targetTime[i])")
+                                    Text("\(game.targetTime[i])")
                                         .font(.title)
                                         .padding(.bottom, 1)
                                 }
                                 if resultLavelVisible{
-                                    Text("±00.00")
+                                    Text("\(game.pushTime[i])")
                                         .font(.title3)
                                 }
                             }
@@ -199,10 +197,7 @@ struct TimerView: View{
                 buttonVisible = false
                 resultLavelVisible = false
                 
-                targetTime = Array(11..<60)
-                    .shuffled()
-                    .prefix(buttonNum)
-                    .map { $0 }
+                game.setTargetTime()
             } else {
                 buttonVisible = true
                 resultLavelVisible = true
@@ -235,11 +230,18 @@ class Game: ObservableObject{
     @Published var sw = StopWatch()
     @Published var isRunning = false
     @Published var score:Double = 0
+    @Published var targetTime: [Int] = []   // buttonの目標時間
+    @Published var pushTime:[Double] = []   // buttonを押した時間
     
     private var cancellable: AnyCancellable?
+    private var num:Int
 
     // Gameを仲介させて値を渡す処理
-    init() {
+    init(buttonNum:Int) {
+        num = buttonNum
+        pushTime = Array(repeating: 0.0, count: num)
+        targetTime = Array(repeating: 0, count: num)
+        
         // カウントタイマーの変更をGameへ伝える
         cancellable = Publishers.Merge(
             ct.objectWillChange,
@@ -250,6 +252,17 @@ class Game: ObservableObject{
         }
     }
     
+    func setTargetTime(){
+        targetTime = Array(11..<60)
+            .shuffled()
+            .prefix(num)
+            .map { $0 }
+    }
+    
+    func recordTime(_ buttonNum:Int){
+        pushTime[buttonNum] = sw.time
+    }
+    
     func start(){
         isRunning = true
         score = 0
@@ -257,8 +270,8 @@ class Game: ObservableObject{
         sw.time = 0      // 必要ならリセット
         sw.stopWatchText = "0.00"
         
-        ct.startTimer()
         ct.sw = sw
+        ct.startTimer()
     }
     
     func end(){
