@@ -11,6 +11,8 @@ struct RecordView: View {
     @State var selectButton = 1
     @State private var isPresented: Bool = false
     @State var dataArray: [[String]] = []
+    @State var sortDate:Int = 0
+    @State var sortResult:Int = 0
     private let tableWidth: CGFloat = 640
     private var columnWidths: [CGFloat] {
         [
@@ -92,7 +94,6 @@ struct RecordView: View {
                 }
                 .padding(.bottom, 10)
                 
-                
                 Button(action: {
                     isPresented = true
                 }) {
@@ -113,12 +114,63 @@ struct RecordView: View {
             }
             .padding(.top, 30)
             .frame(width: 640)
+            
+            // 右側に配置するソート
+            HStack {
+                Spacer()
+
+                VStack {
+                    Text("ソート")
+                        .frame(width:55)
+                        .background(Color.white)
+                    
+                    Button(action:{
+                        if sortDate == 0{
+                            sortDate = 1
+                        } else if sortDate == 1{
+                            sortDate = 2
+                        } else {
+                            sortDate = 0
+                        }
+                        
+                        sortResult = 0
+                    }){
+                        Text("時刻")
+                    }
+                    .frame(width:55)
+                    .foregroundStyle(Color.black)
+                    .background(Color.orange)
+                    
+                    Button(action:{
+                        if sortResult == 0{
+                            sortResult = 1
+                        } else if sortResult == 1{
+                            sortResult = 2
+                        } else {
+                            sortResult = 0
+                        }
+                        
+                        sortDate = 0
+                    }){
+                        Text("結果")
+                    }
+                    .frame(width:55)
+                    .foregroundStyle(Color.black)
+                    .background(Color.orange)
+                }
+                .frame(width: 56)
+            }
         }
         .onAppear(){
             getData(1)
         }
         .onChange(of: selectButton) { _, value in
             getData(value)
+        }
+        .onChange(of: sortDate){ _, value in
+            if value == 1{
+                dataArray.sort { $0[0] < $1[0] }
+            }
         }
     }
     
