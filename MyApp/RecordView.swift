@@ -20,7 +20,6 @@ struct RecordView: View {
     }
     private var userDefaults = UserDefaults.standard
     let radius = CGFloat(10)
-    
 
     var body: some View {
         ZStack{
@@ -115,12 +114,19 @@ struct RecordView: View {
             .padding(.top, 30)
             .frame(width: 640)
         }
+        .onAppear(){
+            getData(1)
+        }
         .onChange(of: selectButton) { _, value in
-            dataArray = userDefaults.array(forKey: "score\(value)") as? [[String]] ?? [[]]
-            
-            for _ in 0...(5-dataArray.count){   // データがないとその分表が表示されないので画面を埋める分だけ追加する
-                dataArray.append(Array(repeating: "", count: 2))
-            }
+            getData(value)
+        }
+    }
+    
+    func getData(_ value:Int){
+        dataArray = userDefaults.array(forKey: "score\(value)") as? [[String]] ?? [[]]
+        
+        for _ in 0...(5-dataArray.count){   // データがないとその分表が表示されないので画面を埋める分だけ追加する
+            dataArray.append(Array(repeating: "", count: 2))
         }
     }
 }

@@ -285,10 +285,10 @@ class Game: ObservableObject{
     }
     
     func recordScore(){ // スコアを記録しておく
-        let dateText = "\(dateFormatter.string(from: playDate))"
-        var data = userDefaults.array(forKey: "score\(difficulty)") as? [[String]] ?? [[]]
-        data.append([dateText,"\(score)"])
-        userDefaults.set(data, forKey: "score\(difficulty)")
+        let dateText = "\(dateFormatter.string(from: playDate))"    // 日付のフォーマット
+        var data = userDefaults.array(forKey: "score\(difficulty)") as? [[String]] ?? [[]]  // データの取得
+        data.append([dateText, String(format: "%.2f", score)])  // データの追加
+        userDefaults.set(data, forKey: "score\(difficulty)")    // データのセット
     }
     
     func resetVariable(){
