@@ -235,14 +235,15 @@ class Game: ObservableObject{
     @Published var diffTime:[String] = []
     private var pushTime:[Double] = []   // buttonを押した時間
     private var cancellable: AnyCancellable?
-    private var num:Int
+    private var difficulty:Int
+    private var userDefaults = UserDefaults.standard
 
     // Gameを仲介させて値を渡す処理
     init(buttonNum:Int) {
-        num = buttonNum
-        pushTime = Array(repeating: 0.0, count: num)
-        diffTime = Array(repeating: "0.00", count: num)
-        targetTime = Array(repeating: 0, count: num)
+        difficulty = buttonNum
+        pushTime = Array(repeating: 0.0, count: difficulty)
+        diffTime = Array(repeating: "0.00", count: difficulty)
+        targetTime = Array(repeating: 0, count: difficulty)
         
         // カウントタイマーの変更をGameへ伝える
         cancellable = Publishers.Merge(
@@ -257,7 +258,7 @@ class Game: ObservableObject{
     func setTargetTime(){
         targetTime = Array(11..<60)
             .shuffled()
-            .prefix(num)
+            .prefix(difficulty)
             .map { $0 }
     }
     
@@ -266,7 +267,7 @@ class Game: ObservableObject{
     }
     
     func getScore(){
-        for i in 0..<num {
+        for i in 0..<difficulty {
             let diff = pushTime[i] - Double(targetTime[i])
             
             if diff < 0{
@@ -279,9 +280,15 @@ class Game: ObservableObject{
         }
     }
     
+    func recordScore(){ // スコアを記録しておく
+        var data = userDefaults.array(forKey: "score\(difficulty)") as? [String] ?? []
+        data.append(String(score))
+        userDefaults.set(data, forKey: "score\(difficulty)")
+    }
+    
     func resetVariable(){
-        pushTime = Array(repeating: 0.0, count: num)
-        diffTime = Array(repeating: "0.00", count: num)
+        pushTime = Array(repeating: 0.0, count: difficulty)
+        diffTime = Array(repeating: "0.00", count: difficulty)
         score = 0
         sw.time = 0      // 必要ならリセット
         sw.stopWatchText = "0.00"
@@ -298,6 +305,7 @@ class Game: ObservableObject{
         isRunning = false
         sw.stopTimer()
         getScore()
+        recordScore()
     }
 }
 
