@@ -237,6 +237,8 @@ class Game: ObservableObject{
     private var cancellable: AnyCancellable?
     private var difficulty:Int
     private var userDefaults = UserDefaults.standard
+    private var playDate = Date()
+    private let dateFormatter = DateFormatter()
 
     // Gameを仲介させて値を渡す処理
     init(buttonNum:Int) {
@@ -244,6 +246,8 @@ class Game: ObservableObject{
         pushTime = Array(repeating: 0.0, count: difficulty)
         diffTime = Array(repeating: "0.00", count: difficulty)
         targetTime = Array(repeating: 0, count: difficulty)
+        dateFormatter.dateFormat = DateFormatter.dateFormat(fromTemplate: "yMdHms", options: 0, locale: Locale(identifier: "ja_JP"))
+
         
         // カウントタイマーの変更をGameへ伝える
         cancellable = Publishers.Merge(
@@ -281,8 +285,9 @@ class Game: ObservableObject{
     }
     
     func recordScore(){ // スコアを記録しておく
-        var data = userDefaults.array(forKey: "score\(difficulty)") as? [String] ?? []
-        data.append(String(score))
+        var dateText = "\(dateFormatter.string(from: playDate))"
+        var data = userDefaults.array(forKey: "score\(difficulty)") as? [[String]] ?? [[]]
+        data.append([dateText,"\(score)"])
         userDefaults.set(data, forKey: "score\(difficulty)")
     }
     
@@ -292,6 +297,7 @@ class Game: ObservableObject{
         score = 0
         sw.time = 0      // 必要ならリセット
         sw.stopWatchText = "0.00"
+        playDate = Date()
     }
     
     func start(){
