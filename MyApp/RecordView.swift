@@ -125,8 +125,11 @@ struct RecordView: View {
     func getData(_ value:Int){
         dataArray = userDefaults.array(forKey: "score\(value)") as? [[String]] ?? [[]]
         
-        for _ in 0...(5-dataArray.count){   // データがないとその分表が表示されないので画面を埋める分だけ追加する
-            dataArray.append(Array(repeating: "", count: 2))
+        let range = 5 - dataArray.count
+        if range > 0 {
+            for _ in 0...(range){   // データがないとその分表が表示されないので画面を埋める分だけ追加する
+                dataArray.append(Array(repeating: "", count: 2))
+            }
         }
     }
 }
