@@ -285,7 +285,7 @@ class Game: ObservableObject{
     }
     
     func recordScore(){ // スコアを記録しておく
-        var dateText = "\(dateFormatter.string(from: playDate))"
+        let dateText = "\(dateFormatter.string(from: playDate))"
         var data = userDefaults.array(forKey: "score\(difficulty)") as? [[String]] ?? [[]]
         data.append([dateText,"\(score)"])
         userDefaults.set(data, forKey: "score\(difficulty)")

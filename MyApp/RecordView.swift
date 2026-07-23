@@ -10,18 +10,15 @@ import SwiftUI
 struct RecordView: View {
     @State var selectButton = 1
     @State private var isPresented: Bool = false
-    @State var dataArray: [[String]] = [
-            ["A1", "A2"],
-            ["B1", "B2"],
-            ["C1", "C2ああああああああああああ"],
-            ["A1", "A2"],
-            ["B1", "B2"],
-            ["C1", "C2"]
-       ]
-    let columnWidths: [CGFloat] = [
-        640.0 * 0.75,
-        640.0 * 0.25,
-    ]
+    @State var dataArray: [[String]] = []
+    private let tableWidth: CGFloat = 640
+    private var columnWidths: [CGFloat] {
+        [
+            tableWidth * 0.75,
+            tableWidth * 0.25
+        ]
+    }
+    private var userDefaults = UserDefaults.standard
     let radius = CGFloat(10)
     
 
@@ -118,49 +115,16 @@ struct RecordView: View {
             .padding(.top, 30)
             .frame(width: 640)
         }
-    }
-}
-
-struct Test: View {
-    let columnWidths: [CGFloat] = [160, 80]
-    let twoDimensionalArray: [[String]] = [
-            ["A1", "A2"],
-            ["B1", "B2"],
-            ["C1", "C2ああああああああああああ"],
-            ["A1", "A2"],
-            ["B1", "B2"],
-            ["C1", "C2"]
-       ]
-
-    var body: some View {
-            ScrollView([.vertical, .horizontal]) {
-                Grid(horizontalSpacing: 0, verticalSpacing: 0) {
-                    ForEach(twoDimensionalArray.indices, id: \.self) { rowIndex in
-                        GridRow {
-                            ForEach(twoDimensionalArray[rowIndex].indices, id: \.self) { colIndex in
-                                let cellText = twoDimensionalArray[rowIndex][colIndex]
-                                
-                                // 2. 列番号（colIndex）に応じて、指定した異なる幅を自動取得
-                                let width = columnWidths[colIndex]
-                                
-                                Text(cellText)
-                                    .font(.body)
-                                    .fontWeight(.regular)
-                                    // 3. 取得した個別の幅をセルに適用
-                                    //（ヘッダーは中央寄せ、データ行は左寄せ）
-                                    .frame(width: width, height: 50)
-                                    .padding(.horizontal, 8) // 文字と枠線の間の余白
-                                    .frame(width: width) // 余白を含めた全体の幅を固定
-                                    .background(Color.clear)
-                                    .border(Color.gray, width: 0.5) // 表の罫線
-                            }
-                        }
-                    }
-                }
-                .padding()
+        .onChange(of: selectButton) { _, value in
+            dataArray = userDefaults.array(forKey: "score\(value)") as? [[String]] ?? [[]]
+            
+            for _ in 0...(5-dataArray.count){   // データがないとその分表が表示されないので画面を埋める分だけ追加する
+                dataArray.append(Array(repeating: "", count: 2))
             }
         }
     }
+}
+
 #Preview {
     RecordView()
 }
