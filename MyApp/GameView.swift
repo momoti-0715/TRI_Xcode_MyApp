@@ -227,7 +227,7 @@ struct TimerView: View{
 }
 
 class Game: ObservableObject{
-    private let isDebug: Bool = true
+    private let isDebug: Bool = false
     
     @Published var ct = CountTimer()
     @Published var sw = StopWatch()
