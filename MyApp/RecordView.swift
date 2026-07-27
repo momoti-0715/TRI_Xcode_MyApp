@@ -11,6 +11,7 @@ struct RecordView: View {
     @State var selectButton = 1
     @State private var isPresented: Bool = false
     @State var dataArray: [[String]] = []
+    @State var playData: [[String]] = []
     @State var sortDate:Int = 0
     @State var sortResult:Int = 0
     private let tableWidth: CGFloat = 640
@@ -81,7 +82,7 @@ struct RecordView: View {
                                     Text(cellText)
                                         .font(.body)
                                         .fontWeight(.regular)
-                                        // 3. テキストが長すぎる場合に自動改行させて「...」になるのを防ぐ
+                                    // 3. テキストが長すぎる場合に自動改行させて「...」になるのを防ぐ
                                         .lineLimit(nil)
                                         .multilineTextAlignment(.leading)
                                         .frame(width: width, height: 50)
@@ -118,41 +119,53 @@ struct RecordView: View {
             // 右側に配置するソート
             HStack {
                 Spacer()
-
+                
                 VStack {
                     Text("ソート")
                         .frame(width:55)
                         .background(Color.white)
                     
                     Button(action:{
-                        if sortDate == 0{
+                        if sortDate == 0 || sortDate == 3{
                             sortDate = 1
                         } else if sortDate == 1{
                             sortDate = 2
                         } else {
-                            sortDate = 0
+                            sortDate = 3
                         }
                         
                         sortResult = 0
                     }){
-                        Text("時刻")
+                        if sortDate == 1 {
+                            Text("時刻 ▲")    // 昇順
+                        } else if sortDate == 2 {
+                            Text("時刻 ▼")    // 降順（新しい順）のとき
+                        } else {
+                            Text("時刻")  // ソートOFF
+                        }
                     }
                     .frame(width:55)
                     .foregroundStyle(Color.black)
                     .background(Color.orange)
                     
                     Button(action:{
-                        if sortResult == 0{
+                        if sortResult == 0 || sortResult == 3{
                             sortResult = 1
                         } else if sortResult == 1{
                             sortResult = 2
                         } else {
-                            sortResult = 0
+                            sortResult = 3
                         }
                         
                         sortDate = 0
                     }){
-                        Text("結果")
+                        if sortResult == 1 {
+                            Text("結果 ▲")    // 昇順
+                        } else if sortResult == 2 {
+                            Text("結果 ▼")    // 降順
+                        } else {
+                            Text("結果")  // ソートOFF
+                        }
                     }
                     .frame(width:55)
                     .foregroundStyle(Color.black)
@@ -163,23 +176,82 @@ struct RecordView: View {
         }
         .onAppear(){
             getData(1)
+            adjust()
         }
         .onChange(of: selectButton) { _, value in
             getData(value)
+            adjust()
         }
         .onChange(of: sortDate){ _, value in
-            if value == 1{
-                dataArray.sort { $0[0] < $1[0] }
+            if playData.count > 1 {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy/M/d H:mm:ss"
+                
+                if value == 1 {
+                    // 時刻：昇順（古い順）
+                    playData.sort {
+                        let date1 = formatter.date(from: $0[0]) ?? Date.distantPast
+                        let date2 = formatter.date(from: $1[0]) ?? Date.distantPast
+                        return date1 < date2
+                    }
+                } else if value == 2 {
+                    // 時刻：降順（新しい順）
+                    playData.sort {
+                        let date1 = formatter.date(from: $0[0]) ?? Date.distantPast
+                        let date2 = formatter.date(from: $1[0]) ?? Date.distantPast
+                        return date1 > date2
+                    }
+                } else if value == 3{
+                    // デフォルト（不要なら削除するか、日付降順などにする）
+                    playData.sort { ($0[0]) > ($1[0]) }
+                }
             }
+            
+            adjust()
+        }
+        .onChange(of: sortResult){ _, value in
+            if playData.count > 1 {
+                if value == 1 {
+                    // 結果：昇順（数値が小さい順）
+                    playData.sort {
+                        // Double型（小数）として正しく変換して比較します
+                        let num1 = Double($0[1]) ?? Double.greatestFiniteMagnitude
+                        let num2 = Double($1[1]) ?? Double.greatestFiniteMagnitude
+                        return num1 < num2
+                    }
+                } else if value == 2 {
+                    // 結果：降順（数値が大きい順）
+                    playData.sort {
+                        let num1 = Double($0[1]) ?? -Double.greatestFiniteMagnitude
+                        let num2 = Double($1[1]) ?? -Double.greatestFiniteMagnitude
+                        return num1 > num2
+                    }
+                } else if value == 3{
+                    // デフォルト（日付降順などに戻す）
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "yyyy/M/d H:mm:ss"
+                    playData.sort {
+                        let date1 = formatter.date(from: $0[0]) ?? Date.distantPast
+                        let date2 = formatter.date(from: $1[0]) ?? Date.distantPast
+                        return date1 > date2
+                    }
+                }
+            }
+            
+            adjust()
         }
     }
     
     func getData(_ value:Int){
-        dataArray = userDefaults.array(forKey: "score\(value)") as? [[String]] ?? [[]]
+        playData = userDefaults.array(forKey: "score\(value)") as? [[String]] ?? []
+    }
+    
+    func adjust(){
+        dataArray = playData
         
         let range = 5 - dataArray.count
         if range > 0 {
-            for _ in 0...(range){   // データがないとその分表が表示されないので画面を埋める分だけ追加する
+            for _ in 0..<(range){   // データがないとその分表が表示されないので画面を埋める分だけ追加する
                 dataArray.append(Array(repeating: "", count: 2))
             }
         }
