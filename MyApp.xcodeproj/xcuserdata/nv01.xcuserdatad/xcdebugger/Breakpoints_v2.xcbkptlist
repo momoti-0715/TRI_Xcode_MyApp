@@ -46,8 +46,8 @@
             filePath = "MyApp/GameView.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "289"
-            endingLineNumber = "289"
+            startingLineNumber = "313"
+            endingLineNumber = "313"
             landmarkName = "recordScore()"
             landmarkType = "7">
          </BreakpointContent>

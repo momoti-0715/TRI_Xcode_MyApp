@@ -227,6 +227,8 @@ struct TimerView: View{
 }
 
 class Game: ObservableObject{
+    private let isDebug: Bool = true
+    
     @Published var ct = CountTimer()
     @Published var sw = StopWatch()
     @Published var isRunning = false
@@ -257,20 +259,42 @@ class Game: ObservableObject{
         .sink { [weak self] _ in
             self?.objectWillChange.send()
         }
+        
+//        if isDebug{
+//            resetAllUserDefaults()
+//        }
     }
     
-    func setTargetTime(){
-        targetTime = Array(11..<60)
+    // アプリの全 UserDefaults データを削除する関数
+    func resetAllUserDefaults() {
+        // アプリの Bundle Identifier を取得
+        if let bundleID = Bundle.main.bundleIdentifier {
+            // 指定したドメインのデータをすべて削除
+            UserDefaults.standard.removePersistentDomain(forName: bundleID)
+            // 変更を即座に同期（念のため）
+            UserDefaults.standard.synchronize()
+            print("UserDefaults の全データがリセットされました。")
+        }
+    }
+    
+    func setTargetTime(){   // 押す時間の設定
+        var maxTime = 60    // 時間の設定の最大値
+        
+        if isDebug{ // デバッグ時には最大値30秒
+            maxTime = 30
+        }
+        
+        targetTime = Array(11..<maxTime)
             .shuffled()
             .prefix(difficulty)
             .map { $0 }
     }
     
-    func recordTime(_ buttonNum:Int){
+    func recordTime(_ buttonNum:Int){   // どのボタンをいつ押したか記録
         pushTime[buttonNum] = sw.time
     }
     
-    func getScore(){
+    func getScore(){    // 各ボタンの時差を計算する
         for i in 0..<difficulty {
             let diff = pushTime[i] - Double(targetTime[i])
             
@@ -291,7 +315,7 @@ class Game: ObservableObject{
         userDefaults.set(data, forKey: "score\(difficulty)")    // データのセット
     }
     
-    func resetVariable(){
+    func resetVariable(){   // リスタートにおいて初期化が必要な変数の初期化
         pushTime = Array(repeating: 0.0, count: difficulty)
         diffTime = Array(repeating: "0.00", count: difficulty)
         score = 0
@@ -300,14 +324,14 @@ class Game: ObservableObject{
         playDate = Date()
     }
     
-    func start(){
+    func start(){   // ゲーム開始処理
         isRunning = true
         sw.stopTimer()   // 動いていたら停止
         ct.sw = sw
         ct.startTimer()
     }
     
-    func end(){
+    func end(){ // ゲーム終了処理
         isRunning = false
         sw.stopTimer()
         getScore()
