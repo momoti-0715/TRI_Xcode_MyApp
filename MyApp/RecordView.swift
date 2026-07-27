@@ -110,7 +110,7 @@ struct RecordView: View {
                         .padding(.trailing, 40)
                 }
                 .fullScreenCover(isPresented: $isPresented) {
-                    ContentView()
+                    MainMenu()
                 }
             }
             .padding(.top, 30)

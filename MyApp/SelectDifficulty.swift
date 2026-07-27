@@ -84,7 +84,7 @@ struct SelectDifficulty: View {
                 }
                 .fullScreenCover(isPresented: $isPresentedMain) {
                     //フルスクリーンの画面遷移
-                    ContentView()
+                    MainMenu()
                 }
             }
             .fullScreenCover(item: $selectedDifficulty) { selection in
