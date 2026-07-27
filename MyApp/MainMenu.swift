@@ -1,13 +1,13 @@
 //
-//  ContentView.swift
+//  MainMenu.swift
 //  MyApp
 //
-//  Created by nv01 on 2026/07/08.
+//  Created by nv01 on 2026/07/27.
 //
 
 import SwiftUI
 
-struct ContentView: View {
+struct MainMenu: View {
     @State private var isPresentedSelect: Bool = false    //画面遷移の時に使用するbool値
     @State private var isPresentedRecord: Bool = false
     let radius = CGFloat(10)
@@ -63,5 +63,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    MainMenu()
 }

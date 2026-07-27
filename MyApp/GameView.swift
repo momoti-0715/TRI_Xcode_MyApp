@@ -164,7 +164,7 @@ struct TimerView: View{
                         .background(RoundedRectangle(cornerRadius: radius).fill(Color.secondary))
                         .padding(.trailing, 40)
                         .fullScreenCover(isPresented: $isPresented) {
-                            ContentView()
+                            MainMenu()
                         }
                         
                         Button(action: {
@@ -227,7 +227,7 @@ struct TimerView: View{
 }
 
 class Game: ObservableObject{
-    private let isDebug: Bool = true
+    private let isDebug: Bool = false
     
     @Published var ct = CountTimer()
     @Published var sw = StopWatch()
